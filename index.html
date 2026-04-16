@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RifConvert • Download YouTube MP4 MP3 by RifDev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 0%, #ff0000 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #ff0000 0%, #ff4444 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #ff4444;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255,68,68,0.3);
+        }
+
+        .subtitle {
+            color: #888;
+            margin-top: 12px;
+            font-size: 15px;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        /* Input URL */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #ff0000;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 18px 20px 18px 55px;
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            border-radius: 60px;
+            font-size: 15px;
+            color: #fff;
+            font-family: 'Inter', monospace;
+            transition: all 0.2s;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #ff0000;
+            background: #141414;
+        }
+
+        .url-input::placeholder {
+            color: #555;
+        }
+
+        /* Button */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            border: none;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #cc0000 0%, #aa0000 100%);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00c853 0%, #00a844 100%);
+            border: none;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-success:hover {
+            transform: scale(0.98);
+        }
+
+        /* Video Preview */
+        .video-preview {
+            background: #0f0f0f;
+            border-radius: 24px;
+            padding: 20px;
+            margin: 24px 0;
+            display: flex;
+            gap: 20px;
+            animation: fadeIn 0.4s ease;
+            border: 1px solid #2a2a2a;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .thumbnail {
+            width: 140px;
+            height: 100px;
+            border-radius: 16px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        /* Format Options */
+        .format-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .format-card {
+            background: #0f0f0f;
+            border: 2px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .format-card:hover {
+            border-color: #ff4444;
+            background: #161616;
+        }
+
+        .format-card.active {
+            border-color: #ff0000;
+            background: linear-gradient(135deg, rgba(255,0,0,0.1), rgba(204,0,0,0.05));
+        }
+
+        .format-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .format-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .format-quality {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Progress */
+        .progress-container {
+            margin: 24px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff4444);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-top: 12px;
+        }
+
+        /* Error */
+        .error-message {
+            background: rgba(255,0,0,0.1);
+            border: 1px solid rgba(255,0,0,0.3);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-top: 20px;
+            display: none;
+            font-size: 14px;
+            color: #ff6666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .feature i {
+            font-size: 28px;
+            color: #ff4444;
+            margin-bottom: 12px;
+        }
+
+        .feature h4 {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .feature p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid #1a1a1a;
+            font-size: 12px;
+            color: #555;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px 16px;
+            }
+            .card {
+                padding: 24px;
+            }
+            .logo {
+                font-size: 36px;
+            }
+            .video-preview {
+                flex-direction: column;
+                text-align: center;
+            }
+            .thumbnail {
+                width: 100%;
+                height: auto;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+            .format-grid {
+                grid-template-columns: 1fr;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">
+                <i class="fas fa-bolt"></i> REAL DOWNLOAD • 24/7 ONLINE
+            </div>
+            <h1 class="logo">
+                RIF<span>CONVERT</span>
+            </h1>
+            <p class="subtitle">by RifDev</p>
+        </div>
+
+        <div class="card">
+            <div class="input-wrapper">
+                <i class="fab fa-youtube input-icon"></i>
+                <input type="text" id="urlInput" class="url-input" placeholder="Paste YouTube URL here...">
+            </div>
+
+            <button id="analyzeBtn" class="btn-primary">
+                <i class="fas fa-search"></i> Analyze Video
+            </button>
+
+            <div id="videoInfo" class="hidden">
+                <div class="video-preview">
+                    <img id="thumbnail" class="thumbnail" alt="Thumbnail">
+                    <div class="video-details">
+                        <div id="title" class="video-title"></div>
+                        <div class="video-meta">
+                            <span><i class="far fa-clock"></i> <span id="duration"></span></span>
+                            <span><i class="fas fa-hd"></i> Full HD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="format-grid">
+                    <div class="format-card active" data-format="mp4">
+                        <div class="format-icon">🎬</div>
+                        <div class="format-name">MP4 Video</div>
+                        <div class="format-quality">1080p • 720p</div>
+                    </div>
+                    <div class="format-card" data-format="mp3">
+                        <div class="format-icon">🎧</div>
+                        <div class="format-name">MP3 Audio</div>
+                        <div class="format-quality">320kbps</div>
+                    </div>
+                </div>
+
+                <div id="progressContainer" class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Starting download...</div>
+                </div>
+
+                <button id="downloadBtn" class="btn-success">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+
+            <div id="errorMsg" class="error-message"></div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <h4>Super Fast</h4>
+                <p>Download in seconds</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <h4>100% Free</h4>
+                <p>No payment needed</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-infinity"></i>
+                <h4>Unlimited</h4>
+                <p>No daily limits</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 RifConvert by RifDev — YouTube to MP4 & MP3 Converter</p>
+            <p style="margin-top: 8px;">⚠️ Download only content you own or have permission to download</p>
+        </div>
+    </div>
+
+    <script>
+        let currentVideoUrl = null;
+        let currentFormat = 'mp4';
+
+        const urlInput = document.getElementById('urlInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const videoInfoDiv = document.getElementById('videoInfo');
+        const thumbnailImg = document.getElementById('thumbnail');
+        const titleEl = document.getElementById('title');
+        const durationEl = document.getElementById('duration');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.querySelector('.progress-fill');
+        const progressText = document.getElementById('progressText');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // Format selection
+        document.querySelectorAll('.format-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.format-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                currentFormat = card.dataset.format;
+            });
+        });
+
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        function setProgress(show, percent = 0, text = '') {
+            if (show) {
+                progressContainer.style.display = 'block';
+                if (percent > 0) {
+                    progressFill.style.width = `${percent}%`;
+                    progressText.textContent = text;
+                }
+            } else {
+                progressContainer.style.display = 'none';
+                progressFill.style.width = '0%';
+            }
+        }
+
+        function updateProgress(percent, text) {
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = text;
+        }
+
+        function setButtonLoading(btn, isLoading, originalHtml) {
+            if (isLoading) {
+                btn.innerHTML = '<div class="spinner"></div> Processing...';
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // Extract YouTube ID
+        function extractVideoId(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=)([^&]+)/,
+                /(?:youtu\.be\/)([^?]+)/,
+                /(?:youtube\.com\/embed\/)([^/?]+)/
+            ];
+            for (let pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        // Analyze video
+        analyzeBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('Please enter a YouTube URL');
+                return;
+            }
+
+            const videoId = extractVideoId(url);
+            if (!videoId) {
+                showError('Invalid YouTube URL');
+                return;
+            }
+
+            currentVideoUrl = url;
+
+            setButtonLoading(analyzeBtn, true, analyzeBtn.innerHTML);
+            videoInfoDiv.classList.add('hidden');
+            setProgress(true, 20, 'Fetching video info...');
+
+            try {
+                const response = await fetch('/api/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateProgress(80, 'Processing...');
+                    await new Promise(r => setTimeout(r, 300));
+                    
+                    thumbnailImg.src = data.data.thumbnail;
+                    titleEl.textContent = data.data.title;
+                    
+                    const minutes = Math.floor(data.data.duration / 60);
+                    const seconds = data.data.duration % 60;
+                    durationEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    updateProgress(100, 'Ready!');
+                    await new Promise(r => setTimeout(r, 500));
+                    setProgress(false);
+                    
+                    videoInfoDiv.classList.remove('hidden');
+                } else {
+                    showError(data.error || 'Failed to fetch video info');
+                    setProgress(false);
+                }
+            } catch (error) {
+                console.error(error);
+                showError('Network error. Please try again.');
+                setProgress(false);
+            } finally {
+                setButtonLoading(analyzeBtn, false, '<i class="fas fa-search"></i> Analyze Video');
+            }
+        });
+
+        // Download REAL
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentVideoUrl) {
+                showError('Please analyze a video first');
+                return;
+            }
+
+            setProgress(true, 0, 'Starting download...');
+            setButtonLoading(downloadBtn, true, downloadBtn.innerHTML);
+
+            try {
+                updateProgress(10, 'Connecting to YouTube...');
+                
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: currentVideoUrl, 
+                        format: currentFormat 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+
+                updateProgress(50, 'Processing video...');
+                
+                // Get blob from response
+                const blob = await response.blob();
+                
+                updateProgress(80, 'Preparing download...');
+                
+                // Create download link
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                
+                // Get filename from Content-Disposition header or create default
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `video.${currentFormat}`;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="(.+)"/);
+                    if (match) filename = match[1];
+                } else {
+                    filename = `rifconvert_${Date.now()}.${currentFormat}`;
+                }
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+                
+                updateProgress(100, 'Download complete!');
+                await new Promise(r => setTimeout(r, 1500));
+                setProgress(false);
+                
+            } catch (error) {
+                console.error(error);
+                showError('Download failed. Please try again.');
+                setProgress(false);
+            } finally {
+                setButtonLoading(downloadBtn, false, '<i class="fas fa-download"></i> Download');
+            }
+        });
+    </script>
+</body>
+</html>
