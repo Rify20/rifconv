@@ -1,0 +1,12 @@
+{
+  "name": "rifconvert",
+  "version": "1.0.0",
+  "description": "RifConvert - YouTube to MP4 MP3 Converter by RifDev",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "keywords": ["youtube", "converter", "mp4", "mp3"],
+  "author": "RifDev",
+  "license": "MIT"
+}

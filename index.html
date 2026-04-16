@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RifConvert - YouTube to MP4/MP3 Converter by RifDev</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">
+                <i class="fas fa-music"></i>
+                Rif<span>Convert</span>
+            </h1>
+            <p class="tagline">by RifDev</p>
+            <p class="subtitle">Download Video & Audio YouTube Gratis, Cepat & Mudah</p>
+        </div>
+
+        <div class="converter-card">
+            <div class="url-input-group">
+                <i class="fab fa-youtube youtube-icon"></i>
+                <input 
+                    type="text" 
+                    id="youtubeUrl" 
+                    placeholder="Tempelkan link YouTube di sini..."
+                    autocomplete="off"
+                >
+                <button id="fetchBtn" class="btn-fetch">
+                    <i class="fas fa-search"></i> Analisis
+                </button>
+            </div>
+
+            <div id="videoInfo" class="video-info hidden">
+                <div class="thumbnail">
+                    <img id="thumbnail" alt="Thumbnail">
+                </div>
+                <div class="details">
+                    <h3 id="title"></h3>
+                    <p id="duration"></p>
+                </div>
+            </div>
+
+            <div class="format-options">
+                <div class="format-card" data-format="mp4">
+                    <i class="fas fa-video"></i>
+                    <h3>MP4 Video</h3>
+                    <p>Kualitas Terbaik</p>
+                    <span class="quality">1080p/720p</span>
+                </div>
+                <div class="format-card" data-format="mp3">
+                    <i class="fas fa-headphones"></i>
+                    <h3>MP3 Audio</h3>
+                    <p>High Quality</p>
+                    <span class="quality">320kbps</span>
+                </div>
+            </div>
+
+            <div id="progressBar" class="progress-bar hidden">
+                <div class="progress-fill"></div>
+                <span class="progress-text">0%</span>
+            </div>
+
+            <div id="downloadBtn" class="download-section hidden">
+                <button class="btn-download">
+                    <i class="fas fa-download"></i> Download Sekarang
+                </button>
+            </div>
+
+            <div id="errorMsg" class="error-message hidden"></div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <h3>Super Cepat</h3>
+                <p>Proses konversi dalam hitungan detik</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <h3>100% Gratis</h3>
+                <p>Tanpa biaya, tanpa registrasi</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-lock"></i>
+                <h3>Aman & Private</h3>
+                <p>Data Anda tidak disimpan</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 RifConvert by RifDev | All Rights Reserved</p>
+            <p class="disclaimer">⚠️ Hanya untuk konten yang tidak dilindungi hak cipta atau dengan izin pemilik</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
