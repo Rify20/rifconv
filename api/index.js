@@ -4,22 +4,12 @@ const app = express();
 
 app.use(express.json());
 
-const REQUEST_OPTIONS = {
-    headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    }
-};
-
 app.post('/api/info', async (req, res) => {
     const { url } = req.body;
-    if (!url) return res.status(400).json({ success: false, error: "URL Kosong" });
-
     try {
-        // Opsi tambahan untuk mencoba menghindari blokir
-        const info = await ytdl.getInfo(url, { 
-            requestOptions: REQUEST_OPTIONS,
-            // Mencoba menggunakan client yang berbeda untuk menghindari age-restriction
-            playerClients: ['ANDROID', 'IOS', 'WEB_EMBEDDED']
+        // Menggunakan client ANDROID karena lebih stabil menembus blokir
+        const info = await ytdl.getInfo(url, {
+            playerClients: ['ANDROID', 'TVHTML5']
         });
 
         res.json({
@@ -32,29 +22,27 @@ app.post('/api/info', async (req, res) => {
         });
     } catch (error) {
         console.error("LOG:", error.message);
-        let errorMsg = "Gagal ambil info.";
-        if (error.message.includes("age restricted")) {
-            errorMsg = "Video ini dibatasi umur (Age Restricted). YouTube melarang akses otomatis.";
-        }
-        res.status(500).json({ success: false, error: errorMsg });
+        let msg = "Gagal ambil info.";
+        if (error.message.includes("403")) msg = "IP Server diblokir YouTube (403). Coba lagi nanti.";
+        if (error.message.includes("age restricted")) msg = "Video ini dibatasi umur (Login Required).";
+        
+        res.status(500).json({ success: false, error: msg });
     }
 });
 
 app.post('/api/download', async (req, res) => {
     const { url, format } = req.body;
     try {
-        const info = await ytdl.getInfo(url, { requestOptions: REQUEST_OPTIONS });
+        const info = await ytdl.getInfo(url, { playerClients: ['ANDROID'] });
         const title = info.videoDetails.title.replace(/[^\w\s]/gi, '');
-        
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(title)}.${format}"`);
         
         ytdl(url, { 
             quality: format === 'mp4' ? 'highest' : 'highestaudio',
-            filter: format === 'mp4' ? 'audioandvideo' : 'audioonly',
-            requestOptions: REQUEST_OPTIONS
+            filter: format === 'mp4' ? 'audioandvideo' : 'audioonly'
         }).pipe(res);
     } catch (error) {
-        if (!res.headersSent) res.status(500).send("Gagal download");
+        if (!res.headersSent) res.status(500).send("Error");
     }
 });
 
