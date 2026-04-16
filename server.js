@@ -1,5 +1,5 @@
 const express = require('express');
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core'); // 🔥 GANTI ke fork yang sudah diperbaiki
 const app = express();
 
 app.use(express.json());
@@ -30,7 +30,16 @@ app.post('/api/info', async (req, res) => {
     }
     
     try {
-        const info = await ytdl.getInfo(url);
+        // Tambahkan opsi untuk mengatasi age restriction dan 410 error
+        const info = await ytdl.getInfo(url, {
+            requestOptions: {
+                headers: {
+                    // User agent seperti browser biasa
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+            }
+        });
+        
         const videoDetails = info.videoDetails;
         
         res.json({
@@ -78,11 +87,25 @@ app.post('/api/download', async (req, res) => {
         if (format === 'mp4') {
             res.setHeader('Content-Type', 'video/mp4');
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(title)}.mp4"`);
-            ytdl(url, { quality: 'highestvideo' }).pipe(res);
+            ytdl(url, { 
+                quality: 'highestvideo',
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                }
+            }).pipe(res);
         } else {
             res.setHeader('Content-Type', 'audio/mpeg');
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(title)}.mp3"`);
-            ytdl(url, { quality: 'highestaudio' }).pipe(res);
+            ytdl(url, { 
+                quality: 'highestaudio',
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                }
+            }).pipe(res);
         }
         
     } catch (error) {
