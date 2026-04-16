@@ -1,39 +1,39 @@
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
-const path = require('path');
 const app = express();
 
 app.use(express.json());
 
+// User Agent agar tidak dianggap bot oleh YouTube
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
 
 app.post('/api/info', async (req, res) => {
-    const { url } = req.body;
     try {
-        const info = await ytdl.getInfo(url, { 
-            requestOptions: { headers: { 'User-Agent': USER_AGENT } } 
+        const { url } = req.body;
+        const info = await ytdl.getInfo(url, {
+            requestOptions: { headers: { 'User-Agent': USER_AGENT } }
         });
         res.json({
             success: true,
             data: {
                 title: info.videoDetails.title,
-                thumbnail: info.videoDetails.thumbnails[info.videoDetails.thumbnails.length - 1]?.url,
-                duration: parseInt(info.videoDetails.lengthSeconds),
+                thumbnail: info.videoDetails.thumbnails[0].url,
                 videoId: info.videoDetails.videoId
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Gagal ambil info' });
+        console.error(error);
+        res.status(500).json({ success: false, error: "Gagal ambil info" });
     }
 });
 
 app.post('/api/download', async (req, res) => {
-    const { url, format } = req.body;
     try {
-        const info = await ytdl.getInfo(url, { 
-            requestOptions: { headers: { 'User-Agent': USER_AGENT } } 
+        const { url, format } = req.body;
+        const info = await ytdl.getInfo(url, {
+            requestOptions: { headers: { 'User-Agent': USER_AGENT } }
         });
-        const title = info.videoDetails.title.replace(/[^\w\s]/gi, '').substring(0, 50);
+        const title = info.videoDetails.title.replace(/[^\w\s]/gi, '');
         
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(title)}.${format}"`);
         
@@ -43,8 +43,8 @@ app.post('/api/download', async (req, res) => {
             requestOptions: { headers: { 'User-Agent': USER_AGENT } }
         }).pipe(res);
     } catch (error) {
-        if (!res.headersSent) res.status(500).send('Error');
+        if (!res.headersSent) res.status(500).send("Download error");
     }
 });
 
-module.exports = app; // Penting untuk Vercel
+module.exports = app;
