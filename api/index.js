@@ -1,49 +1,37 @@
-export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+from flask import Flask, request, Response
+import yt_dlp
+import os
+
+app = Flask(__name__)
+
+@app.route('/api/download')
+def download():
+    url = request.args.get('url')
+    ext = request.args.get('ext', 'mp4') # default mp4
     
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method === 'GET') return res.status(200).json({ status: 'OK' });
+    if not url:
+        return "URL kosong", 400
 
-    const { url, format } = req.body;
-    if (!url) return res.status(400).json({ error: 'URL diperlukan' });
-
-    // Extract YouTube ID
-    const videoId = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/)?.[1];
-    if (!videoId) return res.status(400).json({ error: 'URL YouTube tidak valid' });
-
-    // Return video info (tanpa download)
-    if (!format) {
-        return res.json({
-            success: true,
-            data: {
-                title: 'YouTube Video',
-                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-                videoId: videoId
-            }
-        });
+    # Opsi yt-dlp: mp3 atau mp4
+    ydl_opts = {
+        'format': 'bestaudio/best' if ext == 'mp3' else 'best',
+        'quiet': True,
+        'no_warnings': True,
     }
 
-    // ========== DOWNLOAD - PAKAI MULTIPLE WEBSITE (yg masih hidup) ==========
-    // Daftar website converter yang MASIH AKTIF di 2026
-    const services = {
-        mp4: [
-            `https://cnvmp3.com/en/youtube-to-mp4?url=https://youtu.be/${videoId}`,
-            `https://yt5s.com/en/youtube-to-mp4?url=https://youtu.be/${videoId}`,
-            `https://y2mate.nu/en/youtube-to-mp4?url=https://youtu.be/${videoId}`
-        ],
-        mp3: [
-            `https://cnvmp3.com/en/youtube-to-mp3?url=https://youtu.be/${videoId}`,
-            `https://ytmp3.cc/youtube-to-mp3/?url=https://youtu.be/${videoId}`,
-            `https://onlymp3.net/youtube-to-mp3/?url=https://youtu.be/${videoId}`
-        ]
-    };
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            video_url = info['url']
+            title = info.get('title', 'video')
 
-    const downloadUrl = services[format]?.[0] || services.mp4[0];
-    
-    return res.json({
-        success: true,
-        downloadUrl: downloadUrl,
-        message: 'Klik link, cari tombol download di halaman yang terbuka'
-    });
-}
+            # Kita redirect user langsung ke URL video asli milik server Google/YouTube
+            # Ini cara paling anti-error dan gak bikin server keberatan
+            return Response(video_url, headers={
+                "Content-Disposition": f"attachment; filename={title}.{ext}"
+            })
+    except Exception as e:
+        return str(e), 500
+
+if __name__ == "__main__":
+    app.run()
