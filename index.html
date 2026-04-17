@@ -456,7 +456,7 @@
                 if (data.success) {
                     thumbnailImg.src = data.data.thumbnail;
                     titleEl.textContent = data.data.title;
-                    durationEl.textContent = 'Tidak diketahui';
+                    durationEl.textContent = data.data.duration || 'Tidak diketahui';
                     
                     updateProgress(100, 'Siap!');
                     setTimeout(() => setProgress(false), 500);
@@ -480,7 +480,7 @@
                 return;
             }
 
-            setProgress(true, 0, 'Mencari link download...');
+            setProgress(true, 0, 'Menyiapkan download...');
             setButtonLoading(downloadBtn, true, downloadBtn.innerHTML);
 
             try {
@@ -498,16 +498,17 @@
                 const result = await response.json();
 
                 if (result.success && result.downloadUrl) {
-                    updateProgress(70, 'Membuka link download...');
+                    updateProgress(80, 'Membuka halaman download...');
+                    // Buka di tab baru
                     window.open(result.downloadUrl, '_blank');
-                    updateProgress(100, 'Download dimulai!');
-                    setTimeout(() => setProgress(false), 2000);
+                    updateProgress(100, 'Selesai! Cari tombol download di halaman yang terbuka');
+                    setTimeout(() => setProgress(false), 3000);
                 } else {
                     throw new Error(result.error || 'Download gagal');
                 }
                 
             } catch (error) {
-                console.error(error);
+                console.error('Download error:', error);
                 showError('Download gagal. Silakan coba lagi.');
                 setProgress(false);
             } finally {
