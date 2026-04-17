@@ -22,7 +22,7 @@ function extractVideoId(url) {
     return null;
 }
 
-// API Info - Menggunakan oembed + thumbnail dari YouTube (gratis, tanpa API key)
+// API Info Video
 app.post('/api/info', async (req, res) => {
     const { url } = req.body;
     
@@ -36,26 +36,44 @@ app.post('/api/info', async (req, res) => {
     }
 
     try {
-        // Method 1: Gunakan YouTube oembed (gratis, tanpa API key)
-        const oembedResponse = await axios.get(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+        // Gunakan YouTube API Key jika ada
+        const apiKey = process.env.YOUTUBE_API_KEY;
         
-        // Method 2: Dapatkan durasi dari API alternatif
-        let duration = 0;
-        try {
-            const infoResponse = await axios.get(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
-            if (infoResponse.data && infoResponse.data.duration) {
-                duration = parseInt(infoResponse.data.duration);
+        if (apiKey && apiKey !== 'your_youtube_api_key_here') {
+            const response = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+                params: {
+                    part: 'snippet,contentDetails',
+                    id: videoId,
+                    key: apiKey
+                },
+                timeout: 10000
+            });
+
+            if (response.data.items && response.data.items[0]) {
+                const video = response.data.items[0];
+                const duration = parseDuration(video.contentDetails.duration);
+                
+                return res.json({
+                    success: true,
+                    data: {
+                        title: video.snippet.title,
+                        thumbnail: video.snippet.thumbnails.high.url,
+                        duration: duration,
+                        videoId: videoId
+                    }
+                });
             }
-        } catch(e) {
-            // Fallback: estimasi durasi dari thumbnail? atau biarkan 0
         }
+
+        // Fallback: Gunakan oembed (tanpa API key)
+        const oembedResponse = await axios.get(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
         
         res.json({
             success: true,
             data: {
                 title: oembedResponse.data.title,
                 thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-                duration: duration,
+                duration: 0,
                 videoId: videoId
             }
         });
@@ -63,7 +81,7 @@ app.post('/api/info', async (req, res) => {
     } catch (error) {
         console.error('Info error:', error.message);
         
-        // Fallback: Gunakan info dasar tanpa API
+        // Fallback terakhir: info dasar
         res.json({
             success: true,
             data: {
@@ -76,7 +94,7 @@ app.post('/api/info', async (req, res) => {
     }
 });
 
-// API Download - Menggunakan multiple fallback APIs
+// API Download
 app.post('/api/download', async (req, res) => {
     const { url, format } = req.body;
     
@@ -84,8 +102,8 @@ app.post('/api/download', async (req, res) => {
         return res.status(400).json({ success: false, error: 'URL diperlukan' });
     }
 
+    // Daftar API download (multiple fallback)
     const apis = [
-        // API 1: Savetube (paling reliable)
         async () => {
             const response = await axios.post('https://api.savetube.me/v1/download', {
                 url: url,
@@ -98,26 +116,21 @@ app.post('/api/download', async (req, res) => {
             return response.data?.data?.downloadUrl;
         },
         
-        // API 2: Y2mate alternative
         async () => {
             const response = await axios.get(`https://p.oceansaver.in/ajax/download.php`, {
-                params: { url: url, api_key: '' },
+                params: { url: url },
                 timeout: 15000
             });
             return response.data?.download_url || response.data?.downloadUrl;
         },
         
-        // API 3: Cobalt API
         async () => {
             const response = await axios.post('https://co.wuk.sh/api/json', {
                 url: url,
                 downloadMode: format === 'mp4' ? 'auto' : 'audio',
                 audioFormat: 'mp3'
             }, {
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 timeout: 15000
             });
             return response.data?.url;
@@ -126,13 +139,9 @@ app.post('/api/download', async (req, res) => {
 
     for (let i = 0; i < apis.length; i++) {
         try {
-            console.log(`Mencoba API ${i + 1}...`);
             const downloadUrl = await apis[i]();
             
             if (downloadUrl) {
-                console.log(`API ${i + 1} berhasil!`);
-                
-                // Proxy download
                 const downloadResponse = await axios.get(downloadUrl, {
                     responseType: 'stream',
                     timeout: 60000,
@@ -144,7 +153,6 @@ app.post('/api/download', async (req, res) => {
                 const filename = `RifConvert_${format.toUpperCase()}_${Date.now()}.${format}`;
                 res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
                 res.setHeader('Content-Type', format === 'mp4' ? 'video/mp4' : 'audio/mpeg');
-                res.setHeader('Cache-Control', 'no-cache');
                 
                 downloadResponse.data.pipe(res);
                 return;
@@ -155,24 +163,24 @@ app.post('/api/download', async (req, res) => {
         }
     }
 
-    // Jika semua API gagal
     res.status(500).json({ 
         success: false, 
-        error: 'Semua server download sibuk. Silakan coba lagi dalam beberapa menit.' 
+        error: 'Server download sibuk. Silakan coba lagi.' 
     });
 });
+
+// Helper parse duration
+function parseDuration(duration) {
+    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+    const hours = (match[1] || '').replace('H', '') || 0;
+    const minutes = (match[2] || '').replace('M', '') || 0;
+    const seconds = (match[3] || '').replace('S', '') || 0;
+    return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+}
 
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Handle OPTIONS untuk CORS
-app.options('/api/*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.send(200);
 });
 
 module.exports = app;
