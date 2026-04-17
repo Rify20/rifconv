@@ -3,29 +3,33 @@ const express = require('express');
 const app = express();
 
 app.get('/api/download', async (req, res) => {
-    const { url, type } = req.query;
+    const videoUrl = req.query.url;
+    const type = req.query.type || 'mp4';
 
-    if (!url) return res.status(400).send('URL YouTube mana?');
+    if (!videoUrl || !ytdl.validateURL(videoUrl)) {
+        return res.status(400).send('Link YouTube tidak valid!');
+    }
 
     try {
-        const info = await ytdl.getInfo(url);
+        const info = await ytdl.getInfo(videoUrl);
         const title = info.videoDetails.title.replace(/[^\w\s]/gi, '');
         
-        const format = type === 'mp3' ? 'audioonly' : 'videoandaudio';
-        const contentType = type === 'mp3' ? 'audio/mpeg' : 'video/mp4';
-
+        // Setting Header agar Browser langsung download
         res.setHeader('Content-Disposition', `attachment; filename="${title}.${type}"`);
-        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Type', type === 'mp3' ? 'audio/mpeg' : 'video/mp4');
 
-        // Proses streaming mandiri: YouTube -> Vercel -> User
-        ytdl(url, {
-            filter: format,
-            quality: 'highestaudio'
-        }).pipe(res);
+        // Filter: audioonly untuk mp3, videoandaudio untuk mp4
+        const options = {
+            quality: type === 'mp3' ? 'highestaudio' : 'highest',
+            filter: type === 'mp3' ? 'audioonly' : 'videoandaudio',
+        };
+
+        // Streaming langsung: YouTube -> Vercel -> User
+        ytdl(videoUrl, options).pipe(res);
 
     } catch (err) {
         console.error(err);
-        res.status(500).send('YouTube memblokir koneksi. Coba ganti link atau ulangi.');
+        res.status(500).send('Terjadi kendala teknis. Coba lagi dalam 1 menit.');
     }
 });
 
