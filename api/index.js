@@ -19,7 +19,6 @@ function extractVideoId(url) {
     return null;
 }
 
-// API INFO - PAKAI YOUTUBE OFFICIAL (TANPA API KEY)
 app.post('/api/info', async (req, res) => {
     const { url } = req.body;
     
@@ -33,7 +32,6 @@ app.post('/api/info', async (req, res) => {
     }
 
     try {
-        // Pake oembed YouTube (gratis, no API key)
         const oembed = await axios.get(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
         
         res.json({
@@ -58,37 +56,9 @@ app.post('/api/info', async (req, res) => {
     }
 });
 
-// API DOWNLOAD
 app.post('/api/download', async (req, res) => {
-    const { url, format } = req.body;
-
-    try {
-        // Pake API youtube-get (alternatif)
-        const videoId = extractVideoId(url);
-        const apiUrl = `https://youtube-get.p.rapidapi.com/dl?id=${videoId}`;
-        
-        const response = await axios.get(apiUrl, {
-            headers: {
-                'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || 'test',
-                'X-RapidAPI-Host': 'youtube-get.p.rapidapi.com'
-            },
-            timeout: 20000
-        });
-
-        let downloadUrl = format === 'mp4' 
-            ? response.data?.formats?.find(f => f.resolution === '720p')?.url || response.data?.formats?.[0]?.url
-            : response.data?.audio_formats?.[0]?.url;
-
-        if (downloadUrl) {
-            const fileResponse = await axios.get(downloadUrl, { responseType: 'stream' });
-            res.setHeader('Content-Disposition', `attachment; filename="video.${format}"`);
-            fileResponse.data.pipe(res);
-        } else {
-            throw new Error('URL tidak ditemukan');
-        }
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Download gagal, coba lagi' });
-    }
+    res.status(501).json({ success: false, error: 'Download sedang diperbaiki' });
 });
 
+// INI PENTING!
 module.exports = app;
