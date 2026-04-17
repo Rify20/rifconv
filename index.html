@@ -3,58 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rifconv by rifdev</title>
+    <title>rifconv | rifdev</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0b0f1a] text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-4">
     <div class="w-full max-w-md p-8 bg-[#161b2c] rounded-[2.5rem] border border-white/5 shadow-2xl text-center">
         <h1 class="text-5xl font-black text-red-600 mb-2 italic tracking-tighter">rifconv</h1>
-        <p class="text-zinc-500 text-[10px] uppercase tracking-[0.3em] mb-10">Pure Independent by rifdev</p>
+        <p class="text-zinc-500 text-[10px] uppercase tracking-[0.3em] mb-10 text-center">Pure Independent by rifdev</p>
 
-        <div class="space-y-4">
-            <input id="url" type="text" placeholder="Tempel Link YouTube..." 
-                   class="w-full p-5 rounded-2xl bg-[#0b0f1a] border border-zinc-800 outline-none focus:border-red-600 transition-all text-center text-sm shadow-inner">
+        <input id="url" type="text" placeholder="Tempel Link YouTube..." 
+               class="w-full p-5 rounded-2xl bg-[#0b0f1a] border border-zinc-800 outline-none focus:border-red-600 transition-all text-center text-sm shadow-inner mb-4">
 
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="gas('mp3')" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-900/20">🎵 MP3</button>
-                <button onclick="gas('mp4')" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">🎬 MP4</button>
-            </div>
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="proses('mp3')" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg">🎵 MP3</button>
+            <button onclick="proses('mp4')" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">🎬 MP4</button>
         </div>
 
-        <div id="loader" class="hidden mt-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-            <p class="text-xs text-zinc-500 mt-2 font-medium italic">Sedang menyambungkan ke YouTube...</p>
+        <div id="status" class="mt-8 text-sm font-medium hidden">
+            <p id="statusText" class="text-zinc-400 animate-pulse italic"></p>
         </div>
-
-        <footer class="mt-12 text-[9px] text-zinc-600 uppercase tracking-widest">
-            rifconv v5.0 • No API Side • 24H Stable
-        </footer>
     </div>
 
     <script>
-        function gas(type) {
-            const link = document.getElementById('url').value;
-            if(!link) return alert('Linknya mana?');
+        async function proses(type) {
+            const urlValue = document.getElementById('url').value;
+            if(!urlValue) return alert('Linknya mana?');
 
-            const loader = document.getElementById('loader');
-            loader.classList.remove('hidden');
-
-            // Teknik Rahasia: Buka link download di window tersembunyi
-            // Agar halaman utama rifconv TIDAK TERESET/REFRESH
-            const downloadUrl = `/api/download?url=${encodeURIComponent(link)}&type=${type}`;
+            const status = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
             
-            // Membuat element link sementara untuk men-trigger download
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = ''; 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            status.classList.remove('hidden');
+            statusText.innerText = "Mengambil link dari server...";
 
-            // Sembunyikan loader setelah 8 detik
-            setTimeout(() => {
-                loader.classList.add('hidden');
-            }, 8000);
+            try {
+                const response = await fetch(`/api/download?url=${encodeURIComponent(urlValue)}&type=${type}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    status.classList.add('hidden');
+                    return;
+                }
+
+                statusText.innerText = "Link ditemukan! Memulai download...";
+
+                // TRICK: Kita buat elemen <a> rahasia untuk download file aslinya
+                const a = document.createElement('a');
+                a.href = data.downloadUrl;
+                // Memberi nama file (Hanya bekerja di beberapa browser)
+                a.setAttribute('download', `${data.title}.${type}`);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                setTimeout(() => status.classList.add('hidden'), 3000);
+
+            } catch (err) {
+                alert("Server Sibuk. Ulangi sekali lagi.");
+                status.classList.add('hidden');
+            }
         }
     </script>
 </body>
