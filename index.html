@@ -499,10 +499,10 @@
 
                 if (result.success && result.downloadUrl) {
                     updateProgress(80, 'Membuka halaman download...');
-                    // Buka di tab baru
                     window.open(result.downloadUrl, '_blank');
-                    updateProgress(100, 'Selesai! Cari tombol download di halaman yang terbuka');
-                    setTimeout(() => setProgress(false), 3000);
+                    updateProgress(100, '✅ Selesai!');
+                    showError('📌 Petunjuk: Di halaman yang baru terbuka, cari tombol "Download" atau "Convert" lalu klik');
+                    setTimeout(() => setProgress(false), 4000);
                 } else {
                     throw new Error(result.error || 'Download gagal');
                 }
