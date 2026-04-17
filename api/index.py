@@ -1,41 +1,36 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 import yt_dlp
 
 app = Flask(__name__)
 
 @app.route('/api/download')
 def download():
-    # Mengambil parameter 'url' dan 'ext' dari browser
     video_url = request.args.get('url')
     ext = request.args.get('ext', 'mp4')
 
     if not video_url:
-        return {"error": "URL YouTube harus diisi!"}, 400
+        return "URL YouTube kosong!", 400
 
-    # Settingan mesin yt-dlp
-    # Kita hanya ambil link (URL) aslinya saja, tidak download ke server Vercel
-    # agar tidak kena limit/timeout
+    # Opsi paling stabil agar tidak kena block YouTube
     ydl_opts = {
         'format': 'bestaudio/best' if ext == 'mp3' else 'best[ext=mp4]/best',
         'quiet': True,
         'no_warnings': True,
-        'skip_download': True,
+        'nocheckcertificate': True,
+        'noplaylist': True,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # Proses ambil info video
             info = ydl.extract_info(video_url, download=False)
-            
-            # Ambil link file mentah dari server Google/YouTube
+            # Ambil URL langsung dari server Google Video
             direct_link = info['url']
             
-            # Balikin link-nya ke browser agar user bisa langsung download
-            return direct_link
-            
+            # Alihkan browser user langsung ke link file
+            return redirect(direct_link)
     except Exception as e:
-        return str(e), 500
+        return f"Waduh Error: {str(e)}", 500
 
-# Standar Vercel Python
+# Untuk Vercel Runtime
 def handler(request):
     return app(request)
