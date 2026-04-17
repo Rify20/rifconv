@@ -1,7 +1,11 @@
 {
   "version": 2,
   "buildCommand": "npm install",
-  "public": false,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -13,6 +17,7 @@
     }
   ],
   "env": {
+    "YOUTUBE_API_KEY": "@youtube_api_key",
     "RAPIDAPI_KEY": "@rapidapi_key"
   },
   "headers": [
@@ -21,11 +26,15 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache"
+          "value": "no-cache, no-store, must-revalidate"
         },
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
         }
       ]
     }
