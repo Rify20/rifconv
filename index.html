@@ -2,40 +2,54 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>rifconv by rifdev</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-black text-white flex items-center justify-center min-h-screen">
-    <div class="text-center p-10 bg-zinc-900 rounded-3xl border border-zinc-800 shadow-2xl">
-        <h1 class="text-4xl font-black text-red-600 mb-2">rifconv</h1>
-        <p class="text-zinc-500 mb-8">YouTube MP3 & MP4 - No Ribet 24 Jam</p>
+<body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md text-center bg-[#161b2c] p-8 rounded-[2rem] border border-zinc-800 shadow-2xl">
+        <h1 class="text-5xl font-black text-red-600 mb-2 tracking-tighter">rifconv</h1>
+        <p class="text-zinc-500 mb-8 font-medium text-sm italic">YouTube Converter by rifdev</p>
         
-        <input id="url" type="text" placeholder="Paste link YouTube..." class="w-full p-4 rounded-xl bg-black border border-zinc-700 mb-4 outline-none focus:border-red-600">
+        <input id="url" type="text" placeholder="Tempel link YouTube di sini..." 
+               class="w-full p-4 rounded-2xl bg-[#0b0f1a] border border-zinc-700 mb-4 outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all text-center">
         
-        <div class="flex gap-2">
-            <button onclick="convert('mp4')" class="flex-1 bg-white text-black p-4 rounded-xl font-bold hover:bg-zinc-200">Video MP4</button>
-            <button onclick="convert('mp3')" class="flex-1 bg-red-600 text-white p-4 rounded-xl font-bold hover:bg-red-700">Audio MP3</button>
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="proses('mp4')" class="bg-white text-black p-4 rounded-2xl font-bold hover:bg-zinc-200 active:scale-95 transition-all">🎬 Video MP4</button>
+            <button onclick="proses('mp3')" class="bg-red-600 text-white p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all">🎵 Audio MP3</button>
         </div>
         
-        <p id="msg" class="mt-4 text-sm text-zinc-600"></p>
+        <div id="loader" class="hidden mt-6">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+            <p class="mt-2 text-xs text-zinc-500 italic">Mencari link di server YouTube...</p>
+        </div>
+        
+        <p id="msg" class="mt-6 text-sm text-zinc-400"></p>
     </div>
 
     <script>
-        async function convert(type) {
+        function proses(type) {
             const url = document.getElementById('url').value;
-            if(!url) return alert('Linknya mana?');
-            document.getElementById('msg').innerText = "Sedang memproses... Tunggu sebentar.";
+            if(!url) return alert('Linknya kosong, bos!');
             
-            // Panggil API Python kita
-            try {
-                const res = await fetch(`/api/download?url=${encodeURIComponent(url)}&ext=${type}`);
-                const finalUrl = await res.text();
-                // Buka link video asli untuk didownload
-                window.location.href = finalUrl;
-                document.getElementById('msg').innerText = "Berhasil! Download akan dimulai.";
-            } catch (e) {
-                alert('Error atau URL tidak didukung');
-            }
+            const loader = document.getElementById('loader');
+            const msg = document.getElementById('msg');
+            
+            loader.classList.remove('hidden');
+            msg.innerText = "Sedang diproses... Jangan tutup halaman ini.";
+            
+            // Trigger download lewat API Python
+            // window.location.href akan memicu redirect otomatis ke file
+            window.location.href = `/api/download?url=${encodeURIComponent(url)}&ext=${type}`;
+            
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                msg.innerText = "Jika download tidak jalan, pastikan link benar.";
+            }, 5000);
         }
     </script>
 </body>
