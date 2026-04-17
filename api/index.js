@@ -3,33 +3,33 @@ const express = require('express');
 const app = express();
 
 app.get('/api/download', async (req, res) => {
-    const videoUrl = req.query.url;
-    const type = req.query.type || 'mp4';
+    const { url, type } = req.query;
 
-    if (!videoUrl || !ytdl.validateURL(videoUrl)) {
-        return res.status(400).send('Link YouTube tidak valid!');
+    if (!url || !ytdl.validateURL(url)) {
+        return res.status(400).json({ error: 'Link tidak valid' });
     }
 
     try {
-        const info = await ytdl.getInfo(videoUrl);
-        const title = info.videoDetails.title.replace(/[^\w\s]/gi, '');
+        // Ambil info video
+        const info = await ytdl.getInfo(url);
         
-        // Setting Header agar Browser langsung download
-        res.setHeader('Content-Disposition', `attachment; filename="${title}.${type}"`);
-        res.setHeader('Content-Type', type === 'mp3' ? 'audio/mpeg' : 'video/mp4');
+        // Cari format yang paling pas (mp3 atau mp4)
+        const format = ytdl.chooseFormat(info.formats, { 
+            quality: type === 'mp3' ? 'highestaudio' : 'highestvideo',
+            filter: type === 'mp3' ? 'audioonly' : 'videoandaudio'
+        });
 
-        // Filter: audioonly untuk mp3, videoandaudio untuk mp4
-        const options = {
-            quality: type === 'mp3' ? 'highestaudio' : 'highest',
-            filter: type === 'mp3' ? 'audioonly' : 'videoandaudio',
-        };
+        if (!format || !format.url) throw new Error('Format tidak ditemukan');
 
-        // Streaming langsung: YouTube -> Vercel -> User
-        ytdl(videoUrl, options).pipe(res);
+        // Kirim LINK ASLI ke frontend (bukan file-nya)
+        // Agar browser user yang mendownload langsung, bukan server Vercel
+        res.json({ 
+            title: info.videoDetails.title,
+            downloadUrl: format.url 
+        });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Terjadi kendala teknis. Coba lagi dalam 1 menit.');
+        res.status(500).json({ error: 'YouTube memblokir server. Coba lagi.' });
     }
 });
 
