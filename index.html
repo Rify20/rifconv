@@ -3,64 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rifconv | rifdev</title>
+    <title>rifconv by rifdev</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-md p-8 bg-[#161b2c] rounded-[2.5rem] border border-white/5 shadow-2xl text-center">
-        <h1 class="text-5xl font-black text-red-600 mb-2 italic tracking-tighter">rifconv</h1>
-        <p class="text-zinc-500 text-[10px] uppercase tracking-[0.3em] mb-10 text-center">Pure Independent by rifdev</p>
-
-        <input id="url" type="text" placeholder="Tempel Link YouTube..." 
-               class="w-full p-5 rounded-2xl bg-[#0b0f1a] border border-zinc-800 outline-none focus:border-red-600 transition-all text-center text-sm shadow-inner mb-4">
-
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="proses('mp3')" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg">🎵 MP3</button>
-            <button onclick="proses('mp4')" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">🎬 MP4</button>
+<body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-4 font-sans">
+    <div class="w-full max-w-md text-center bg-[#161b2c] p-8 rounded-[3rem] border border-zinc-800 shadow-2xl">
+        <h1 class="text-5xl font-black text-red-600 mb-2 tracking-tighter italic">rifconv</h1>
+        <p class="text-zinc-500 mb-8 font-medium text-xs tracking-[0.2em] uppercase">BY RIFDEV CONVERTER</p>
+        
+        <input id="url" type="text" placeholder="Tempel link YouTube di sini..." 
+               class="w-full p-4 rounded-2xl bg-[#0b0f1a] border border-zinc-700 mb-4 outline-none focus:border-red-600 text-center transition-all shadow-inner">
+        
+        <div class="grid grid-cols-1 gap-3">
+            <button onclick="convert('mp3')" class="bg-red-600 text-white p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-900/20">🎵 Download MP3</button>
+            <button onclick="convert('mp4')" class="bg-zinc-200 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">🎬 Download MP4</button>
         </div>
-
-        <div id="status" class="mt-8 text-sm font-medium hidden">
-            <p id="statusText" class="text-zinc-400 animate-pulse italic"></p>
+        
+        <div id="loading" class="hidden mt-6">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+            <p id="status" class="mt-2 text-xs text-zinc-500 italic">Membypass proteksi YouTube...</p>
         </div>
     </div>
 
     <script>
-        async function proses(type) {
-            const urlValue = document.getElementById('url').value;
-            if(!urlValue) return alert('Linknya mana?');
+        async function convert(format) {
+            const videoUrl = document.getElementById('url').value;
+            if (!videoUrl) return alert('Linknya kosong, Rif!');
 
+            const loading = document.getElementById('loading');
             const status = document.getElementById('status');
-            const statusText = document.getElementById('statusText');
-            
-            status.classList.remove('hidden');
-            statusText.innerText = "Mengambil link dari server...";
+            loading.classList.remove('hidden');
+            status.innerText = "Sedang mengambil data file...";
 
+            // Kita pakai API Cobalt (Engine Open Source paling stabil untuk converter mandiri)
+            // Ini jauh lebih kuat daripada yt-dlp di Vercel
             try {
-                const response = await fetch(`/api/download?url=${encodeURIComponent(urlValue)}&type=${type}`);
+                const response = await fetch('https://api.cobalt.tools/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: videoUrl,
+                        downloadMode: format === 'mp3' ? 'audio' : 'video',
+                        vQuality: '720'
+                    })
+                });
+
                 const data = await response.json();
 
-                if (data.error) {
-                    alert(data.error);
-                    status.classList.add('hidden');
-                    return;
+                if (data.url) {
+                    // Berhasil! Langsung arahkan ke file download
+                    window.location.href = data.url;
+                    status.innerText = "Berhasil! Download dimulai.";
+                } else {
+                    throw new Error();
                 }
 
-                statusText.innerText = "Link ditemukan! Memulai download...";
-
-                // TRICK: Kita buat elemen <a> rahasia untuk download file aslinya
-                const a = document.createElement('a');
-                a.href = data.downloadUrl;
-                // Memberi nama file (Hanya bekerja di beberapa browser)
-                a.setAttribute('download', `${data.title}.${type}`);
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                setTimeout(() => status.classList.add('hidden'), 3000);
-
             } catch (err) {
-                alert("Server Sibuk. Ulangi sekali lagi.");
-                status.classList.add('hidden');
+                alert("YouTube sedang memproteksi video ini. Coba video lain atau ulangi sebentar lagi.");
+            } finally {
+                setTimeout(() => loading.classList.add('hidden'), 5000);
             }
         }
     </script>
