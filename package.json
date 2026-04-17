@@ -1,31 +1,22 @@
 {
   "name": "rifconvert",
-  "version": "1.0.0",
-  "description": "Download video & audio converter dari berbagai platform",
+  "version": "2.0.0",
+  "description": "YouTube to MP4 & MP3 Converter - Working Version",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
     "dev": "nodemon api/index.js"
   },
-  "keywords": [
-    "video",
-    "download",
-    "youtube",
-    "tiktok",
-    "converter"
-  ],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   }
 }
