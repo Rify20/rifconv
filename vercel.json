@@ -1,7 +1,11 @@
 {
     "rewrites": [
         {
-            "source": "/api/(.*)",
+            "source": "/api/info",
+            "destination": "/api/info.js"
+        },
+        {
+            "source": "/api/download",
             "destination": "/api/index.js"
         },
         {
