@@ -16,10 +16,6 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "YOUTUBE_API_KEY": "@youtube_api_key",
-    "RAPIDAPI_KEY": "@rapidapi_key"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
