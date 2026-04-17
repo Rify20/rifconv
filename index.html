@@ -9,43 +9,43 @@
 <body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-4 font-sans">
     <div class="w-full max-w-md text-center bg-[#161b2c] p-8 rounded-[3rem] border border-zinc-800 shadow-2xl">
         <h1 class="text-5xl font-black text-red-600 mb-2 tracking-tighter italic">rifconv</h1>
-        <p class="text-zinc-500 mb-8 font-medium text-xs tracking-[0.2em] uppercase">by rifdev converter</p>
+        <p class="text-zinc-500 mb-8 font-medium text-xs tracking-[0.2em] uppercase">YouTube Converter by rifdev</p>
         
-        <input id="url" type="text" placeholder="Paste link YouTube di sini..." 
+        <input id="url" type="text" placeholder="Tempel link YouTube di sini..." 
                class="w-full p-4 rounded-2xl bg-[#0b0f1a] border border-zinc-700 mb-4 outline-none focus:border-red-600 text-center transition-all shadow-inner">
         
         <div class="grid grid-cols-1 gap-3">
-            <button onclick="download('mp3')" class="bg-red-600 text-white p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-900/20">🎵 Download MP3 (Audio)</button>
-            <button onclick="download('mp4')" class="bg-white text-black p-4 rounded-2xl font-bold hover:bg-zinc-200 active:scale-95 transition-all">🎬 Download MP4 (Video)</button>
+            <button onclick="proses('mp3')" class="bg-red-600 text-white p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-900/20">🎵 Download MP3 (Audio)</button>
+            <button onclick="proses('mp4')" class="bg-white text-black p-4 rounded-2xl font-bold hover:bg-zinc-200 active:scale-95 transition-all">🎬 Download MP4 (Video)</button>
         </div>
         
         <p id="msg" class="mt-6 text-xs text-zinc-500 italic px-4"></p>
         
         <div class="mt-8 pt-6 border-t border-zinc-800">
-            <p class="text-[10px] text-zinc-600 uppercase tracking-widest">Full Online 24 Jam • No Ribet</p>
+            <p class="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">rifconv v3.0 • Stabil & Cepat</p>
         </div>
     </div>
 
     <script>
-        function download(format) {
+        function proses(format) {
             const videoUrl = document.getElementById('url').value;
-            if (!videoUrl) return alert('Linknya kosong, Rif!');
+            if (!videoUrl) return alert('Linknya mana, rif?');
 
             const msg = document.getElementById('msg');
-            msg.innerText = "Sabar ya, lagi dialihkan ke server download...";
+            msg.innerText = "Sabar, lagi nyiapin server download...";
 
-            // Kita pakai API loader yang lebih stabil (Y2Mate API Bridge)
-            // Ini akan membuka halaman konversi otomatis
-            let finalApi = "";
+            // Kita pakai jalur aman lewat loader yang lebih stabil
+            const apiBase = format === 'mp3' 
+                ? 'https://api.mp3now.io/api/convert?url=' 
+                : 'https://api.mp3now.io/api/convert?url=';
             
-            if(format === 'mp3') {
-                finalApi = `https://p.y2mate.is/api/button/mp3?url=${encodeURIComponent(videoUrl)}`;
-            } else {
-                finalApi = `https://p.y2mate.is/api/button/videos?url=${encodeURIComponent(videoUrl)}`;
-            }
-
-            // Langsung buka link-nya
-            window.location.href = finalApi;
+            // Cara kerjanya: kita pancing dengan iframe atau langsung buka tab baru
+            // Agar browser tidak memblokir karena masalah DNS domain API sebelumnya
+            const downloadUrl = `https://www.y2mate.com/v2/download?url=${encodeURIComponent(videoUrl)}&type=${format}`;
+            
+            window.open(downloadUrl, '_blank');
+            
+            msg.innerText = "Download sedang diproses di tab baru.";
         }
     </script>
 </body>
