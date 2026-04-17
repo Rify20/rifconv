@@ -6,39 +6,55 @@
     <title>rifconv by rifdev</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0b0f1a] text-white min-h-screen flex items-center justify-center font-sans">
-    <div class="w-full max-w-md p-8 bg-[#161b2c] rounded-[2.5rem] border border-zinc-800 shadow-2xl">
-        <h1 class="text-4xl font-black text-red-600 text-center mb-1 italic">rifconv</h1>
-        <p class="text-zinc-500 text-center text-[10px] tracking-widest uppercase mb-8">Full Mandiri by rifdev</p>
+<body class="bg-[#0b0f1a] text-white min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md p-8 bg-[#161b2c] rounded-[2.5rem] border border-white/5 shadow-2xl text-center">
+        <h1 class="text-5xl font-black text-red-600 mb-2 italic tracking-tighter">rifconv</h1>
+        <p class="text-zinc-500 text-[10px] uppercase tracking-[0.3em] mb-10">Pure Independent by rifdev</p>
 
-        <input id="url" type="text" placeholder="Masukkan Link YouTube..." 
-               class="w-full p-4 rounded-2xl bg-[#0b0f1a] border border-zinc-700 mb-4 outline-none focus:border-red-600 text-center transition-all shadow-inner">
+        <div class="space-y-4">
+            <input id="url" type="text" placeholder="Tempel Link YouTube..." 
+                   class="w-full p-5 rounded-2xl bg-[#0b0f1a] border border-zinc-800 outline-none focus:border-red-600 transition-all text-center text-sm shadow-inner">
 
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="startDownload('mp3')" id="btn-mp3" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg">MP3 Audio</button>
-            <button onclick="startDownload('mp4')" id="btn-mp4" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">MP4 Video</button>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="gas('mp3')" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-900/20">🎵 MP3</button>
+                <button onclick="gas('mp4')" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">🎬 MP4</button>
+            </div>
         </div>
 
-        <div id="loading" class="hidden mt-8 text-center">
-            <div class="animate-bounce text-red-500 font-bold text-sm">Sedang Menyiapkan File...</div>
-            <p class="text-[10px] text-zinc-500 mt-2 italic">Jangan tutup halaman, file akan otomatis terdownload</p>
+        <div id="loader" class="hidden mt-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+            <p class="text-xs text-zinc-500 mt-2 font-medium italic">Sedang menyambungkan ke YouTube...</p>
         </div>
+
+        <footer class="mt-12 text-[9px] text-zinc-600 uppercase tracking-widest">
+            rifconv v5.0 • No API Side • 24H Stable
+        </footer>
     </div>
 
     <script>
-        function startDownload(type) {
-            const url = document.getElementById('url').value;
-            if(!url) return alert('Linknya kosong, Rif!');
+        function gas(type) {
+            const link = document.getElementById('url').value;
+            if(!link) return alert('Linknya mana?');
 
-            document.getElementById('loading').classList.remove('hidden');
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            // Teknik Rahasia: Buka link download di window tersembunyi
+            // Agar halaman utama rifconv TIDAK TERESET/REFRESH
+            const downloadUrl = `/api/download?url=${encodeURIComponent(link)}&type=${type}`;
             
-            // Proses download langsung dari API web kamu sendiri
-            window.location.href = `/api/download?url=${encodeURIComponent(url)}&type=${type}`;
-            
-            // Sembunyikan loading setelah beberapa detik karena browser mulai mendownload
+            // Membuat element link sementara untuk men-trigger download
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = ''; 
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Sembunyikan loader setelah 8 detik
             setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 10000);
+                loader.classList.add('hidden');
+            }, 8000);
         }
     </script>
 </body>
