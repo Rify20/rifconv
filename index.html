@@ -3,45 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rifconv | Mandiri</title>
+    <title>rifconv by rifdev</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0b101b] text-white flex items-center justify-center min-h-screen">
-    <div class="max-w-md w-full p-8 bg-[#1a2235] rounded-[2.5rem] border border-white/5 shadow-2xl">
-        <h1 class="text-4xl font-black text-red-500 text-center mb-2">rifconv</h1>
-        <p class="text-center text-zinc-500 text-xs tracking-widest mb-8 italic">BY RIFDEV • STANDALONE v4</p>
+<body class="bg-[#0b0f1a] text-white min-h-screen flex items-center justify-center font-sans">
+    <div class="w-full max-w-md p-8 bg-[#161b2c] rounded-[2.5rem] border border-zinc-800 shadow-2xl">
+        <h1 class="text-4xl font-black text-red-600 text-center mb-1 italic">rifconv</h1>
+        <p class="text-zinc-500 text-center text-[10px] tracking-widest uppercase mb-8">Full Mandiri by rifdev</p>
 
-        <input id="videoUrl" type="text" placeholder="Masukkan Link YouTube..." 
-               class="w-full bg-[#0b101b] border border-zinc-700 p-4 rounded-2xl outline-none focus:border-red-500 transition-all text-center mb-4">
+        <input id="url" type="text" placeholder="Masukkan Link YouTube..." 
+               class="w-full p-4 rounded-2xl bg-[#0b0f1a] border border-zinc-700 mb-4 outline-none focus:border-red-600 text-center transition-all shadow-inner">
 
         <div class="grid grid-cols-2 gap-3">
-            <button onclick="getDownload('mp3')" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all">MP3 Audio</button>
-            <button onclick="getDownload('mp4')" class="bg-zinc-700 p-4 rounded-2xl font-bold hover:bg-zinc-600 active:scale-95 transition-all">MP4 Video</button>
+            <button onclick="startDownload('mp3')" id="btn-mp3" class="bg-red-600 p-4 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg">MP3 Audio</button>
+            <button onclick="startDownload('mp4')" id="btn-mp4" class="bg-zinc-100 text-black p-4 rounded-2xl font-bold hover:bg-white active:scale-95 transition-all shadow-lg">MP4 Video</button>
         </div>
 
-        <div id="status" class="hidden mt-8 text-center">
-            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
-            <p class="text-xs text-zinc-400 mt-2">Sedang mengambil file langsung dari YouTube...</p>
+        <div id="loading" class="hidden mt-8 text-center">
+            <div class="animate-bounce text-red-500 font-bold text-sm">Sedang Menyiapkan File...</div>
+            <p class="text-[10px] text-zinc-500 mt-2 italic">Jangan tutup halaman, file akan otomatis terdownload</p>
         </div>
     </div>
 
     <script>
-        function getDownload(type) {
-            const url = document.getElementById('videoUrl').value;
-            if(!url) return alert("Link mana bos?");
-            
-            document.getElementById('status').classList.remove('hidden');
+        function startDownload(type) {
+            const url = document.getElementById('url').value;
+            if(!url) return alert('Linknya kosong, Rif!');
 
-            // Kita pakai engine ddownload yang terkenal mandiri dan jarang kena DNS block
-            // Ini tetap mandiri karena prosesnya dilakukan secara stream ke browser kamu
-            const downloadLink = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=${type}&color=ff0000`;
+            document.getElementById('loading').classList.remove('hidden');
             
-            // Kita pakai iframe tersembunyi untuk memancing download tanpa pindah halaman
-            const win = window.open(downloadLink, '_blank');
+            // Proses download langsung dari API web kamu sendiri
+            window.location.href = `/api/download?url=${encodeURIComponent(url)}&type=${type}`;
             
+            // Sembunyikan loading setelah beberapa detik karena browser mulai mendownload
             setTimeout(() => {
-                document.getElementById('status').classList.add('hidden');
-            }, 5000);
+                document.getElementById('loading').classList.add('hidden');
+            }, 10000);
         }
     </script>
 </body>
